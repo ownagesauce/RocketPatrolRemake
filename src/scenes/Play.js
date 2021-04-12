@@ -24,9 +24,9 @@ class Play extends Phaser.Scene {
 
         this.p1Rocket = new Rocket(this, game.config.width / 2, game.config.height - borderUISize - borderPadding, 'rocket');
 
-        this.ship1 = new Ship(this, 100, 200, 'spaceship');
-        this.ship2 = new Ship(this, 300, 300, 'spaceship');
-        this.ship3 = new Ship(this, 450, 250, 'spaceship');
+        this.ship1 = new Ship(this, 100, 200, 'spaceship', 0, 30);
+        this.ship2 = new Ship(this, 450, 250, 'spaceship', 0, 50);
+        this.ship3 = new Ship(this, 300, 300, 'spaceship', 0, 70);
 
         // green UI background
         this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
@@ -50,15 +50,61 @@ class Play extends Phaser.Scene {
 
         });
 
+        this.p1Score = 0;
+
+        let scoreConfig = {
+
+            fontFamily: 'Courier',
+            fontSize: '28px',
+            backgroundColor: '#F3B141',
+            color: '#843605',
+            align: 'right',
+
+            padding: {
+              top: 5,
+              bottom: 5,
+            },
+
+            fixedWidth: 100
+
+        }
+
+        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, this.p1Score, scoreConfig);
+
+        this.gameOver = false;
+
+        scoreConfig.fixedWidth = 0;
+        this.clock = this.time.delayedCall(60000, () => {
+
+        this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
+        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart', scoreConfig).setOrigin(0.5);
+        this.gameOver = true;
+
+        }, null, this);
+
     }
 
     update() {
 
-        this.starfield.tilePositionX -= 2;
+        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
+            this.scene.restart();
+        }
+
+        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+            this.scene.start("menuScene");
+        }
+
+        this.starfield.tilePositionX -= 1;
         this.p1Rocket.update();
-        this.ship1.update();
-        this.ship2.update();
-        this.ship3.update();
+        
+        if (!this.gameOver) {       
+
+            this.p1Rocket.update();
+            this.ship1.update();
+            this.ship2.update();
+            this.ship3.update();
+
+        }
 
         if(this.checkCollision(this.p1Rocket, this.ship1)) {
 
@@ -112,6 +158,11 @@ class Play extends Phaser.Scene {
             boom.destroy();
 
         });
+
+        this.p1Score += ship.points;
+        this.scoreLeft.text = this.p1Score;  
+
+        this.sound.play('sfx_explosion');
 
     }
 

@@ -5,12 +5,13 @@ class Ship extends Phaser.GameObjects.Sprite {
         super(scene, x, y, texture, frame);
         scene.add.existing(this);
         this.points = pointValue;
+        this.moveSpeed = game.settings.spaceshipSpeed;
 
     }
 
     update() {
 
-        this.x -= 2;
+        this.x -= moveSpeed;
 
         if(this.x < this.width - 100) {
 
